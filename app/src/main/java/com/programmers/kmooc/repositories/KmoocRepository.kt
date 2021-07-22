@@ -49,12 +49,43 @@ class KmoocRepository {
     }
 
     private fun parseLectureList(jsonObject: JSONObject): LectureList {
-        //TODO: JSONObject -> LectureList 를 구현하세요
-        return LectureList.EMPTY
+        return jsonObject.getJSONObject("pagination")
+            .run {
+                LectureList(
+                    getInt("count"),
+                    getInt("num_pages"),
+                    getString("previous"),
+                    getString("next"),
+                    jsonObject.getJSONArray("results")
+                        .run {
+                            mutableListOf<Lecture>()
+                                .apply {
+                                    for (i in 0 until length()) {
+                                        add(parseLecture(getJSONObject(i)))
+                                    }
+                                }
+                        }
+                )
+            }
     }
 
     private fun parseLecture(jsonObject: JSONObject): Lecture {
-        //TODO: JSONObject -> Lecture 를 구현하세요
-        return Lecture.EMPTY
+        return jsonObject.run {
+            Lecture(
+                getString("id"),
+                getString("number"),
+                getString("name"),
+                getString("classfy_name"),
+                getString("middle_classfy_name"),
+                getJSONObject("media").getJSONObject("image").getString("small"),
+                getJSONObject("media").getJSONObject("image").getString("large"),
+                getString("short_description"),
+                getString("org_name"),
+                DateUtil.parseDate(getString("start")),
+                DateUtil.parseDate(getString("end")),
+                if (has("teachers")) getString("teachers") else null,
+                if (has("overview")) getString("overview") else null,
+            )
+        }
     }
 }
